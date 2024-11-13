@@ -1,0 +1,43 @@
+language choice{
+	argv = language
+	if language != EN/FR/NL{
+		language = EN
+	{
+}
+
+
+linked list using error tbl{}
+
+(1)
+read error msg{
+	add extended ASCII
+}
+
+
+split msg{
+	"error code" \t "error msg"
+}
+
+change variabelen to default{
+
+}
+
+format msg{}
+
+search error code in linked list{
+	doesn't exist -> default
+}
+
+msg has "%s" => %s = juiste parameter{}
+
+get date-time{}
+
+format error msg{
+	msg = (date-time;SevCode;subsys;errorCode;error msg)
+}
+
+stuur error msg op broker{}
+
+validate of msg ontvangen is{}
+
+back to (1);
