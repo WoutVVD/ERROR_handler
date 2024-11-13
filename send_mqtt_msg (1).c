@@ -4,17 +4,54 @@
 #include "defined.h"
 #include <time.h>
 
-#include <stdio.h>
-#include <time.h>
+//tbl construct for all error msgs
+struct tbl
+{
+    char errcode[8]; //"app####\n"
+    char errmsg[80];
+    struct tbl *next;
+};
+struct tbl *head = NULL;
+struct tbl *current = NULL;
 
-void delay(int milliseconds) {
-    clock_t start_time = clock();
-    while (clock() < start_time + milliseconds * CLOCKS_PER_SEC / 1000);
+//insert first error code+msg into linked list
+void insert_first(char *errorcode, char *errormsg)
+{
+    struct tbl *lk = (struct tbl *)malloc(sizeof(struct tbl));
+
+    strcpy(lk->errcode, errorcode);
+    strcpy(lk->errmsg, errormsg);
+
+    lk->next = NULL;
+
+    head = lk;
 }
 
-char date_time(){
+void insert_next(struct tbl *list, char *errorcode, char *errormsg)
+{
+    struct tbl *lk = (struct tbl *)malloc(sizeof(struct tbl));
+
+    strcpy(lk->errcode, errorcode);
+    strcpy(lk->errmsg, errormsg);
+
+    lk->next = NULL;
+
+    list->next = lk;
+}
+
+//delay function  
+//https://stackoverflow.com/questions/56158798/how-do-you-make-a-function-that-waits-an-x-amount-of-seconds-in-c
+void delay(int miliseconds)
+{
+    clock_t start_time = clock();
+    while (clock() < start_time + milli_seconds);
+}
+
+//get date and time, returned in a char array "year-month-day hour:minute:second"
+char date_time()
+{
     time_t currentTime;
-    
+
     time(&currentTime);
 
     struct tm *localTime = localtime(&currentTime);
