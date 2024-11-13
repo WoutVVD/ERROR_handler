@@ -1,6 +1,67 @@
 #include <stdio.h>
 #include <string.h>
 #include <MQTTClient.h>
+#include "defined.h"
+#include <time.h>
+
+#include <stdio.h>
+#include <time.h>
+
+void delay(int milliseconds) {
+    clock_t start_time = clock();
+    while (clock() < start_time + milliseconds * CLOCKS_PER_SEC / 1000);
+}
+
+void date_time(){
+    time_t currentTime;
+    
+    time(&currentTime);
+
+    struct tm *localTime = localtime(&currentTime);
+
+    int year = localTime->tm_year + 1900;
+    int month = localTime->tm_mon + 1;
+    int day = localTime->tm_mday;
+    int hour = localTime->tm_hour;
+    int minute = localTime->tm_min;
+    int second = localTime->tm_sec;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
