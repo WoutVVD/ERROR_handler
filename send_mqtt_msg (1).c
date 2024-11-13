@@ -12,7 +12,7 @@ void delay(int milliseconds) {
     while (clock() < start_time + milliseconds * CLOCKS_PER_SEC / 1000);
 }
 
-void date_time(){
+char date_time(){
     time_t currentTime;
     
     time(&currentTime);
@@ -25,33 +25,11 @@ void date_time(){
     int hour = localTime->tm_hour;
     int minute = localTime->tm_min;
     int second = localTime->tm_sec;
+
+    char datetime[20];
+    datetime = "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second;
+    return datetime;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
