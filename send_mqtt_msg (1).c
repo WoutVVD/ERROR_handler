@@ -46,7 +46,7 @@ void delay(int miliseconds)
     clock_t start_time = clock();
     while (clock() < start_time + milli_seconds);
 }
-
+    
 //get date and time, returned in a char array "year-month-day hour:minute:second"
 char date_time()
 {

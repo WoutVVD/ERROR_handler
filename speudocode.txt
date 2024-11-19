@@ -6,15 +6,15 @@ language choice{
 }
 
 constuct tbl{
-	char errorcode[8]; //"app####\n"
-    char errormsg[80];
+	char errcode[8]; //"app####\n"
+    char errmsg[80];
 }
 
 insert first data into tbl using error tbl{
 	allocate memory for tbl with length or tbl
 
-	tbl_errorcode =  "errorcode" from txt file
-	tbl_errormsg =  "errormsg" from txt file
+	tbl_errcode =  "errorcode" from txt file with selected language
+	tbl_errmsg =  "errormsg" from txt file with selected language
 	
 	tbl_next = NULL
     tbl_head = this tbl
@@ -23,8 +23,8 @@ insert first data into tbl using error tbl{
 insert next data into tbl using error tbl{
     allocate memory for tbl with length or tbl
 
-	tbl_errorcode =  "errorcode" from txt file
-	tbl_errormsg =  "errormsg" from txt file
+	tbl_errcode =  "errorcode" from txt file with selected language
+	tbl_errmsg =  "errormsg" from txt file with selected language
 
 	tbl_next = NULL
     tbl_list_next  = this tbl
@@ -32,7 +32,9 @@ insert next data into tbl using error tbl{
 
 (1)
 read error msg{
-	add extended ASCII
+	include errormsg = "sevCode;subSys;errorCode;extra info"
+	//extra info = '%s' in error msg text doc
+
 }
 
 
@@ -41,11 +43,14 @@ split msg{
 }
 
 change variabelen to default{
-
+	sevDefault = "SEV4"
+	errorCodeDefault = "ERR0001"
+	errorMsgDefault = "<errorcode> is invalid/not found"
 }
 
-format msg{}
 
+
+//format
 search error code in linked list{
 	start with first tbl_list/node
 	while "user input" not equal to tbl_naam{
@@ -69,9 +74,11 @@ get date-time{}
 format error msg{
 	msg = (date-time;SevCode;subsys;errorCode;error msg)
 }
+//end of format
 
-stuur error msg op broker{}
 
-validate of msg ontvangen is{}
+send error msg to broker{}
+
+validate if msg has been received{}
 
 back to (1);
