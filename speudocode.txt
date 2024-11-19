@@ -1,12 +1,34 @@
 language choice{
-	argv = language
+	input = language
 	if language != EN/FR/NL{
 		language = EN
-	{
+	}
 }
 
+constuct tbl{
+	char errorcode[8]; //"app####\n"
+    char errormsg[80];
+}
 
-linked list using error tbl{}
+insert first data into tbl using error tbl{
+	allocate memory for tbl with length or tbl
+
+	tbl_errorcode =  "errorcode" from txt file
+	tbl_errormsg =  "errormsg" from txt file
+	
+	tbl_next = NULL
+    tbl_head = this tbl
+}
+
+insert next data into tbl using error tbl{
+    allocate memory for tbl with length or tbl
+
+	tbl_errorcode =  "errorcode" from txt file
+	tbl_errormsg =  "errormsg" from txt file
+
+	tbl_next = NULL
+    tbl_list_next  = this tbl
+}
 
 (1)
 read error msg{
@@ -15,7 +37,7 @@ read error msg{
 
 
 split msg{
-	"error code" \t "error msg"
+	"errorcode" \t "errormsg"
 }
 
 change variabelen to default{
@@ -25,7 +47,19 @@ change variabelen to default{
 format msg{}
 
 search error code in linked list{
-	doesn't exist -> default
+	start with first tbl_list/node
+	while "user input" not equal to tbl_naam{
+        if "naam" = "naam" in tbl_list{
+            list_nr = current tbl_list
+		}
+        else{
+            go next
+		}
+	}
+	if not found{
+	errormsg = default
+	errorCode = default
+	}
 }
 
 msg has "%s" => %s = juiste parameter{}
