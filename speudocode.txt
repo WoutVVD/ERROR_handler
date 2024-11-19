@@ -5,8 +5,8 @@ language choice{
 	}
 }
 
-constuct tbl{
-	char errcode[8]; //"app####\n"
+construct tbl{
+	char errcode[7]; //"app####"
     char errmsg[80];
 }
 
@@ -30,19 +30,17 @@ insert next data into tbl using error tbl{
     tbl_list_next  = this tbl
 }
 
-(1)
 read error msg{
-	include errormsg = "sevCode;subSys;errorCode;extra info"
-	//extra info = '%s' in error msg text doc
-
+	incoming errormsg = "sevCode;subSys;errorCode;extra info"
+	//extra info = to replace '%s' with in error msg text doc
 }
 
 
 split msg{
-	"errorcode" \t "errormsg"
+	split "errorcode";"subsys;"errormsg";extra info"
 }
 
-change variabelen to default{
+change variables to default{
 	sevDefault = "SEV4"
 	errorCodeDefault = "ERR0001"
 	errorMsgDefault = "<errorcode> is invalid/not found"
@@ -62,8 +60,7 @@ search error code in linked list{
 		}
 	}
 	if not found{
-	errormsg = default
-	errorCode = default
+
 	}
 }
 
