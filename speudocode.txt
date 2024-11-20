@@ -60,11 +60,13 @@ search error code in linked list{
 		}
 	}
 	if not found{
-
+		function "change variables to default"
 	}
 }
 
-msg has "%s" => %s = juiste parameter{}
+if msg has "%s" {
+	%s => juiste parameter
+}
 
 get date-time{}
 
@@ -77,5 +79,3 @@ format error msg{
 send error msg to broker{}
 
 validate if msg has been received{}
-
-back to (1);

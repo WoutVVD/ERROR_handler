@@ -4,6 +4,15 @@
 #include "defined.h"
 #include <time.h>
 
+//language
+char langaugeSet(char lang){
+    if (lang != "EN" || "NL" || "FR"){
+        lang = "EN";
+    }
+    return lang;
+}
+
+
 //tbl construct for all error msgs
 struct tbl
 {
@@ -27,6 +36,7 @@ void insert_first(char *errorcode, char *errormsg)
     head = lk;
 }
 
+//insert next error code+msg into linked list
 void insert_next(struct tbl *list, char *errorcode, char *errormsg)
 {
     struct tbl *lk = (struct tbl *)malloc(sizeof(struct tbl));
@@ -68,6 +78,10 @@ char date_time()
     return datetime;
 }
 
+int main(int argc, char* argv[]) {
+    char languageChoice = langaugeSet(argv);
+
+}
 
 
 
@@ -78,8 +92,7 @@ char date_time()
 
 
 
-
-
+/*
 int main(int argc, char* argv[]) {
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -117,3 +130,4 @@ int main(int argc, char* argv[]) {
 
     return rc;
 }
+*/
