@@ -1,17 +1,25 @@
 #include <stdio.h>
 #include <string.h>
-#include <MQTTClient.h>
-#include "defined.h"
+//#include <MQTTClient.h>
+//#include "defined.h"
 #include <time.h>
+#include <stdlib.h>
 
 //language
-char langaugeSet(char lang){
-    if (lang != "EN" || "NL" || "FR"){
+char* languageSet(char* lang) 
+{
+    if (lang == NULL)
+    {
+        lang = "EN";
+    }
+    else if (strcmp(lang, "EN") != 0 && strcmp(lang, "NL") != 0 && strcmp(lang, "FR") != 0)
+    {
         lang = "EN";
     }
     return lang;
 }
 
+/*
 
 //tbl construct for all error msgs
 struct tbl
@@ -54,7 +62,7 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
 void delay(int miliseconds)
 {
     clock_t start_time = clock();
-    while (clock() < start_time + milli_seconds);
+    //while (clock() < start_time + milli_seconds);
 }
     
 //get date and time, returned in a char array "year-month-day hour:minute:second"
@@ -73,14 +81,15 @@ char date_time()
     int minute = localTime->tm_min;
     int second = localTime->tm_sec;
 
-    char datetime[20];
-    datetime = "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second;
+    //char datetime[20];
+    char datetime[20] = ()"%04d-%02d-%02d %02d:%02d:%02d\0", year, month, day, hour, minute, second);
     return datetime;
 }
-
+*/
 int main(int argc, char* argv[]) {
-    char languageChoice = langaugeSet(argv);
-
+    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
+    printf("langaugeChoice: %s\n", languageChoice);
+    return 0;
 }
 
 
