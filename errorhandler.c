@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 //#include <MQTTClient.h>
-//#include "defined.h"
+#include "defined.h"
 #include <time.h>
 #include <stdlib.h>
 
@@ -19,7 +19,6 @@ char* languageSet(char* lang)
     return lang;
 }
 
-/*
 
 //tbl construct for all error msgs
 struct tbl
@@ -32,7 +31,7 @@ struct tbl *head = NULL;
 struct tbl *current = NULL;
 
 //insert first error code+msg into linked list
-void insert_first(char *errorcode, char *errormsg)
+void insert_first(struct tbl **head, char *errorcode, char *errormsg)
 {
     struct tbl *lk = (struct tbl *)malloc(sizeof(struct tbl));
 
@@ -41,7 +40,7 @@ void insert_first(char *errorcode, char *errormsg)
 
     lk->next = NULL;
 
-    head = lk;
+    *head = lk;
 }
 
 //insert next error code+msg into linked list
@@ -57,6 +56,8 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
     list->next = lk;
 }
 
+
+
 //delay function  
 //https://stackoverflow.com/questions/56158798/how-do-you-make-a-function-that-waits-an-x-amount-of-seconds-in-c
 void delay(int miliseconds)
@@ -66,7 +67,7 @@ void delay(int miliseconds)
 }
     
 //get date and time, returned in a char array "year-month-day hour:minute:second"
-char date_time()
+char* date_time()
 {
     time_t currentTime;
 
@@ -81,17 +82,68 @@ char date_time()
     int minute = localTime->tm_min;
     int second = localTime->tm_sec;
 
-    //char datetime[20];
-    char datetime[20] = ()"%04d-%02d-%02d %02d:%02d:%02d\0", year, month, day, hour, minute, second);
+    //YYYY-MM-DD HH:MM:SS\0;
+    char* datetime = malloc(20 * sizeof(char));
+    sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
     return datetime;
 }
-*/
-int main(int argc, char* argv[]) {
-    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
-    printf("langaugeChoice: %s\n", languageChoice);
-    return 0;
+
+void print_list()
+{
+
+    struct tbl *p = head;
+    int count = 1;
+    while (p != NULL)
+    {
+        printf("%d, %s, %s\n", count, p->errcode, p->errmsg);
+        p = p->next;
+        count++;
+    }
+    printf("Einde van de lijst: \n\n");
 }
 
+int main(int argc, char* argv[]) {
+    char errorcode[8]; //"app####\n"
+    char errormsg[80];
+    char line[256];
+    int line_number = 0;
+    
+    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
+    char filenaam[20];
+    sprintf(filenaam, "Error_msg_%s.txt", languageChoice);
+    char filepath[50]; 
+    sprintf(filepath, "./%s", filenaam);
+
+    FILE *fp = fopen(filepath, "r");
+        while (fgets(line, sizeof(line), fp))
+    {
+        line_number++;
+        if (line[0] != '#' && line[0] != '\n' && line[0] != '=')
+        {
+            if (sscanf(line, "%8[^\t\n]%*c%80[^\t\n]%*c",errorcode, errormsg) == 2)
+            {
+                if (head == NULL)
+                {
+                    insert_first(&head, errorcode, errormsg);
+                    current = head;
+                }
+                else
+                {
+                    insert_next(current, errorcode, errormsg);
+                    current = current->next;
+                }
+            }
+            else
+            {
+                printf("Error op lijn %d: Foute data formaat\n", line_number);
+            }
+        }
+    print_list();
+
+    }
+
+    return 0;
+}
 
 
 
