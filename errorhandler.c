@@ -141,9 +141,31 @@ void fillTbl(char* languageChoice){
     fclose(fp);
 }
 
-char splitMsg_Default(){}
-char formatMsg(){}
 char receiveMsg(){}
+
+//split msg "errorcode";"subsys;"errormsg";extra info"
+void splitMsg_Default(char incomingMsg[1024]){
+    char errorcode[8]; //"app####\n"
+    char subsys[10];
+    char errormsg[80];
+    char extra[1024];
+
+    sscanf(incomingMsg, "%c;%c;%c;%c", errorcode, subsys, errormsg, extra);
+
+    if (errorcode[4] > 6 || errorcode[4] < 0){
+        errorcode = errorCodeDefault;
+    }
+
+
+
+
+
+    formatMsg();
+
+
+}
+
+char formatMsg(char ){}
 void sendMsg(){}
 
 
@@ -153,9 +175,8 @@ int main(int argc, char* argv[]) {
     char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
     fillTbl(languageChoice);
     char incomingMsg[1024] = receiveMsg();
-    splitMsg_Default();
+    splitMsg_Default(incomingMsg);
     char datetime[20] = date_time();
-    formatMsg();
     sendMsg();
     return 0;
 }
