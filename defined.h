@@ -6,5 +6,7 @@
 #define TIMEOUT     10000L                                      // Timeout in milliseconds
 
 #define	sevDefault = "SEV4"                                     //default severity
-#define	errorCodeDefault = "ERR0001"                            //default error code
+#define	errorCodeDefault = "ERR0000"                            //default error code
 #define	errorMsgDefault = "<errorcode> is invalid/not found"    //default error message
+
+

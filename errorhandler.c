@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-//language
+//set language
 char* languageSet(char* lang) 
 {
     if (lang == NULL)
@@ -18,7 +18,6 @@ char* languageSet(char* lang)
     }
     return lang;
 }
-
 
 //tbl construct for all error msgs
 struct tbl
@@ -56,8 +55,6 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
     list->next = lk;
 }
 
-
-
 //delay function  
 //https://stackoverflow.com/questions/56158798/how-do-you-make-a-function-that-waits-an-x-amount-of-seconds-in-c
 void delay(int miliseconds)
@@ -88,9 +85,9 @@ char* date_time()
     return datetime;
 }
 
+//debug or tbl
 void print_list()
 {
-
     struct tbl *p = head;
     int count = 1;
     while (p != NULL)
@@ -102,13 +99,13 @@ void print_list()
     printf("Einde van de lijst: \n\n");
 }
 
-int main(int argc, char* argv[]) {
+//fill tbl with error codes and messages
+void fillTbl(char* languageChoice){
     char errorcode[8]; //"app####\n"
     char errormsg[80];
     char line[256];
     int line_number = 0;
-    
-    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
+
     char filenaam[20];
     sprintf(filenaam, "Error_msg_%s.txt", languageChoice);
     char filepath[50]; 
@@ -138,57 +135,27 @@ int main(int argc, char* argv[]) {
                 printf("Error op lijn %d: Foute data formaat\n", line_number);
             }
         }
-    print_list();
-
     }
 
+
+    fclose(fp);
+}
+
+char splitMsg_Default(){}
+char formatMsg(){}
+char receiveMsg(){}
+void sendMsg(){}
+
+
+
+int main(int argc, char* argv[]) {
+
+    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
+    fillTbl(languageChoice);
+    char incomingMsg[1024] = receiveMsg();
+    splitMsg_Default();
+    char datetime[20] = date_time();
+    formatMsg();
+    sendMsg();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-/*
-int main(int argc, char* argv[]) {
-    MQTTClient client;
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    int rc;
-
-    // Initialize the MQTT client
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-
-    // Set connection options
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
-    // Connect to the broker
-    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
-        printf("Failed to connect, return code %d\n", rc);
-        return -1;
-    }
-
-    // Create the message
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
-
-    // Publish the message
-    MQTTClient_deliveryToken token;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
-    rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
-    printf("Message with delivery token %d delivered\n", token);
-
-    // Disconnect from the broker
-    MQTTClient_disconnect(client, 10000);
-    MQTTClient_destroy(&client);
-
-    return rc;
-}
-*/
