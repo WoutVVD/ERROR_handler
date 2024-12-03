@@ -155,9 +155,6 @@ void fillTbl(char* languageChoice){
     fclose(fp);
 }
 
-//recieve msg from mqtt broker
-char receiveMsg(){}
-
 //split msg "errorcode";"subsys;"errormsg";extra info"
 char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     char errorcode[8]; //"app####\n"
@@ -197,6 +194,8 @@ char formatmsg(char sevcode[1], char errorcode[8], char subsys[10], char errorms
 //send msg to mqtt broker
 void sendMsg(){}
 
+//recieve msg from mqtt broker
+char receiveMsg(){}
 
 int main(int argc, char* argv[]) {
 
