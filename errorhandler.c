@@ -55,12 +55,19 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
     list->next = lk;
 }
 
-char searrchtbl(char errorcode){
-
-
-
-
-
+char searchtbl(struct tbl **list, char errorcode)
+{
+    struct tbl *temp = head;
+    while (temp != NULL)
+    {
+        if (strcasecmp(temp->errcode, errorcode) == 0)
+        {
+            *list = temp;
+            return 1;
+        }
+        temp = temp->next;
+    }
+    return 0;
 }
 
 //delay function  
@@ -145,7 +152,6 @@ void fillTbl(char* languageChoice){
         }
     }
 
-
     fclose(fp);
 }
 
@@ -157,17 +163,21 @@ char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     char errorcode[8]; //"app####\n"
     char subsys[10];
     char errormsg[1024];
-    char sevcode[1];
+    int sevcode[1];
     char msg[1024];
+    struct tbl *found_record = NULL;
 
     sscanf(incomingMsg, "%d;%s;%s;%s", sevcode, errorcode, subsys, errormsg);
 
-    if (errorcode[8] > 6 || errorcode[8] < 0){
+    if (searchtbl(&found_record, errorcode) == 0)
+    {
         strcpy(errorcode, errorCodeDefault);
-        strcpy(errormsg, sevDefault);
+        strcpy(errormsg, errorMsgDefault);
     }
-    else {
-        strcpy(errormsg, searchtbl(errorcode));
+    else
+    {
+        strcpy(errorcode, found_record->errcode);
+        strcpy(errormsg, found_record->errmsg);
     }
     if (sevcode > 4 || sevcode < 0){
         strcpy(sevcode, sevDefault);
@@ -179,6 +189,7 @@ char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
 //format msg to "datetime;sevcode;subsys;errorcode;errormsg"
 char formatmsg(char sevcode[1], char errorcode[8], char subsys[10], char errormsg[1024], char datetime[20]){
     char msg[1024];
+    sevcode = "sev%d", sevcode;
     sprintf(msg, "%s;%s;%s;%s;%s", datetime, sevcode, subsys, errorcode, errormsg);
     return msg;
 }
@@ -189,12 +200,15 @@ void sendMsg(){}
 
 int main(int argc, char* argv[]) {
 
+    char incomingMsg[1024];
+    char datetime[20];
+    char msg[1024];
+
     char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
     fillTbl(languageChoice);
-    char incomingMsg[1024] = receiveMsg();
-    char datetime[20] = date_time();
-    char msg[1024];
+    strcpy(incomingMsg, receiveMsg());
+    strcpy(datetime, date_time());
     strcpy(msg, splitMsg_Default(incomingMsg, datetime));
-    sendMsg();
+    sendMsg(msg);
     return 0;
 }
