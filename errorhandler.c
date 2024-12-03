@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-//#include <MQTTClient.h>
+#include <MQTTClient.h>
 #include "defined.h"
 #include <time.h>
 #include <stdlib.h>
@@ -159,12 +159,13 @@ void fillTbl(char* languageChoice){
 char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     char errorcode[8]; //"app####\n"
     char subsys[10];
+    char errorinfo[1024];
     char errormsg[1024];
     int sevcode[1];
     char msg[1024];
     struct tbl *found_record = NULL;
 
-    sscanf(incomingMsg, "%d;%s;%s;%s", sevcode, errorcode, subsys, errormsg);
+    sscanf(incomingMsg, "%d;%s;%s;%s", sevcode, subsys, errorcode, errorinfo);
 
     if (searchtbl(&found_record, errorcode) == 0)
     {
@@ -175,6 +176,7 @@ char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     {
         strcpy(errorcode, found_record->errcode);
         strcpy(errormsg, found_record->errmsg);
+        strcat(errormsg, errorinfo);
     }
     if (sevcode > 4 || sevcode < 0){
         strcpy(sevcode, sevDefault);
@@ -192,22 +194,71 @@ char formatmsg(char sevcode[1], char errorcode[8], char subsys[10], char errorms
 }
 
 //send msg to mqtt broker
-void sendMsg(){}
+void SendMsg(char PAYLOAD[1024]){
+    MQTTClient client;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    int rc;
+
+    // Initialize the MQTT client
+    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+
+    // Set connection options
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+
+    // Connect to the broker
+    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
+        printf("Failed to connect, return code %d\n", rc);
+        return;
+    }
+
+    // Create the message
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    pubmsg.payload = PAYLOAD;
+    pubmsg.payloadlen = strlen(PAYLOAD);
+    pubmsg.qos = QOS;
+    pubmsg.retained = 0;
+
+    // Publish the message
+    MQTTClient_deliveryToken token;
+    MQTTClient_publishMessage(client, SendTopic, &pubmsg, &token);
+    rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
+    printf("Message with delivery token %d delivered\n", token);
+
+    // Disconnect from the broker
+    MQTTClient_disconnect(client, 10000);
+    MQTTClient_destroy(&client);
+}
 
 //recieve msg from mqtt broker
-char receiveMsg(){}
-
-int main(int argc, char* argv[]) {
+char receiveMsg(void* context, char* topicName, int topicLen, MQTTClient_message* message){
+    char* payload = message->payload;
+    printf("Received message: %s\n", payload);
+    MQTTClient_freeMessage(&message);
+    MQTTClient_free(topicName);
+    return *payload;
 
     char incomingMsg[1024];
     char datetime[20];
     char msg[1024];
 
-    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
-    fillTbl(languageChoice);
     strcpy(incomingMsg, receiveMsg());
     strcpy(datetime, date_time());
     strcpy(msg, splitMsg_Default(incomingMsg, datetime));
     sendMsg(msg);
+}
+
+//main
+int main(int argc, char* argv[]) {
+
+    char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
+    fillTbl(languageChoice);
+
+    MQTTClient_setCallbacks(client, NULL, NULL, receiveMsg, NULL);
+
+    for (;;){
+        sleep(1);
+    }
+
     return 0;
 }
