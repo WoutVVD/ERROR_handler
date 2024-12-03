@@ -55,6 +55,14 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
     list->next = lk;
 }
 
+char searrchtbl(char errorcode){
+
+
+
+
+
+}
+
 //delay function  
 //https://stackoverflow.com/questions/56158798/how-do-you-make-a-function-that-waits-an-x-amount-of-seconds-in-c
 void delay(int miliseconds)
@@ -85,7 +93,7 @@ char* date_time()
     return datetime;
 }
 
-//debug or tbl
+//debug of tbl
 void print_list()
 {
     struct tbl *p = head;
@@ -141,33 +149,42 @@ void fillTbl(char* languageChoice){
     fclose(fp);
 }
 
+//recieve msg from mqtt broker
 char receiveMsg(){}
 
 //split msg "errorcode";"subsys;"errormsg";extra info"
-void splitMsg_Default(char incomingMsg[1024]){
+char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     char errorcode[8]; //"app####\n"
     char subsys[10];
-    char errormsg[80];
-    char extra[1024];
+    char errormsg[1024];
+    char sevcode[1];
+    char msg[1024];
 
-    sscanf(incomingMsg, "%c;%c;%c;%c", errorcode, subsys, errormsg, extra);
+    sscanf(incomingMsg, "%d;%s;%s;%s", sevcode, errorcode, subsys, errormsg);
 
-    if (errorcode[4] > 6 || errorcode[4] < 0){
-        errorcode = errorCodeDefault;
+    if (errorcode[8] > 6 || errorcode[8] < 0){
+        strcpy(errorcode, errorCodeDefault);
+        strcpy(errormsg, sevDefault);
     }
-
-
-
-
-
-    formatMsg();
-
-
+    else {
+        strcpy(errormsg, searchtbl(errorcode));
+    }
+    if (sevcode > 4 || sevcode < 0){
+        strcpy(sevcode, sevDefault);
+    }
+    strcpy(msg, formatmsg(sevcode, errorcode, subsys, errormsg, datetime));
+    return msg;
 }
 
-char formatMsg(char ){}
-void sendMsg(){}
+//format msg to "datetime;sevcode;subsys;errorcode;errormsg"
+char formatmsg(char sevcode[1], char errorcode[8], char subsys[10], char errormsg[1024], char datetime[20]){
+    char msg[1024];
+    sprintf(msg, "%s;%s;%s;%s;%s", datetime, sevcode, subsys, errorcode, errormsg);
+    return msg;
+}
 
+//send msg to mqtt broker
+void sendMsg(){}
 
 
 int main(int argc, char* argv[]) {
@@ -175,8 +192,9 @@ int main(int argc, char* argv[]) {
     char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
     fillTbl(languageChoice);
     char incomingMsg[1024] = receiveMsg();
-    splitMsg_Default(incomingMsg);
     char datetime[20] = date_time();
+    char msg[1024];
+    strcpy(msg, splitMsg_Default(incomingMsg, datetime));
     sendMsg();
     return 0;
 }
