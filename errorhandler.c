@@ -55,7 +55,7 @@ void insert_next(struct tbl *list, char *errorcode, char *errormsg)
     list->next = lk;
 }
 
-char searchtbl(struct tbl **list, char errorcode)
+char searchtbl(struct tbl **list, char *errorcode)
 {
     struct tbl *temp = head;
     while (temp != NULL)
@@ -155,14 +155,26 @@ void fillTbl(char* languageChoice){
     fclose(fp);
 }
 
+//format msg to "datetime;sevcode;subsys;errorcode;errormsg"
+char* formatmsg(int sevcode[1], char errorcode[8], char subsys[10], char errormsg[1024], char datetime[20]){
+    char* msg = malloc(1024 * sizeof(char));
+    if (msg == NULL) {
+        return NULL;  // Handle allocation failure
+    }
+    char sevcodestr[4];
+    sprintf(sevcodestr, "SEV%d", sevcode[0]);
+    sprintf(msg, "%s;%s;%s;%s;%s", datetime, sevcodestr, subsys, errorcode, errormsg);
+    return msg;
+}
+
 //split msg "errorcode";"subsys;"errormsg";extra info"
-char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
+char* splitMsg_Default(char incomingMsg[1024], char datetime[20]){
     char errorcode[8]; //"app####\n"
     char subsys[10];
     char errorinfo[1024];
     char errormsg[1024];
     int sevcode[1];
-    char msg[1024];
+    char* msg = malloc(1024 * sizeof(char));
     struct tbl *found_record = NULL;
 
     sscanf(incomingMsg, "%d;%s;%s;%s", sevcode, subsys, errorcode, errorinfo);
@@ -178,23 +190,23 @@ char splitMsg_Default(char incomingMsg[1024], char datetime[20]){
         strcpy(errormsg, found_record->errmsg);
         strcat(errormsg, errorinfo);
     }
-    if (sevcode > 4 || sevcode < 0){
-        strcpy(sevcode, sevDefault);
+    if (sevcode[0] > 4 || sevcode[0] < 0){
+        sevcode[0] = atoi(sevDefault);
     }
-    strcpy(msg, formatmsg(sevcode, errorcode, subsys, errormsg, datetime));
-    return msg;
-}
-
-//format msg to "datetime;sevcode;subsys;errorcode;errormsg"
-char formatmsg(char sevcode[1], char errorcode[8], char subsys[10], char errormsg[1024], char datetime[20]){
-    char msg[1024];
-    sevcode = "sev%d", sevcode;
-    sprintf(msg, "%s;%s;%s;%s;%s", datetime, sevcode, subsys, errorcode, errormsg);
+    strcpy(msg, formatmsg(&sevcode[0], errorcode, subsys, errormsg, datetime));
     return msg;
 }
 
 //send msg to mqtt broker
 void SendMsg(char PAYLOAD[1024]){
+    //AI START (SEGMENTATION FAULT)
+    // Create a local copy of the payload
+    char* payload_copy = strdup(PAYLOAD);
+    pubmsg.payload = payload_copy;
+    // ... rest of the code ...
+    free(payload_copy); // Free before disconnecting
+    //AI END (SEGMENTATION FAULT)
+
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
@@ -221,7 +233,7 @@ void SendMsg(char PAYLOAD[1024]){
 
     // Publish the message
     MQTTClient_deliveryToken token;
-    MQTTClient_publishMessage(client, SendTopic, &pubmsg, &token);
+    MQTTClient_publishMessage(client, NULL, &pubmsg, &token);
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("Message with delivery token %d delivered\n", token);
 
@@ -231,34 +243,49 @@ void SendMsg(char PAYLOAD[1024]){
 }
 
 //recieve msg from mqtt broker
-char receiveMsg(void* context, char* topicName, int topicLen, MQTTClient_message* message){
+int receiveMsg(void* context, char* topicName, int topicLen, MQTTClient_message* message){
     char* payload = message->payload;
     printf("Received message: %s\n", payload);
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
-    return *payload;
 
     char incomingMsg[1024];
     char datetime[20];
     char msg[1024];
 
-    strcpy(incomingMsg, receiveMsg());
     strcpy(datetime, date_time());
-    strcpy(msg, splitMsg_Default(incomingMsg, datetime));
-    sendMsg(msg);
+    strcpy(msg, splitMsg_Default(payload, datetime));
+    SendMsg(msg);
+    return 1;
 }
 
 //main
 int main(int argc, char* argv[]) {
+    MQTTClient client;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;  // Define pubmsg here
+
+    int rc;
 
     char* languageChoice = languageSet(argv[1]); //set language FR/NL/EN, default = EN
     fillTbl(languageChoice);
 
-    MQTTClient_setCallbacks(client, NULL, NULL, receiveMsg, NULL);
+    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
-    for (;;){
-        sleep(1);
+    MQTTClient_setCallbacks(CLIENTID, NULL, NULL, receiveMsg, NULL);
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+    
+    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
+        printf("Failed to connect, return code %d\n", rc);
+        return 1;
+    }
+
+    while(1) {
+        delay(1000); 
     }
     
+    MQTTClient_disconnect(client, 10000);
+    MQTTClient_destroy(&client);
     return 0;
 }
