@@ -5,6 +5,9 @@
 #include <time.h>
 #include <stdlib.h>
 
+//AI said this is a way to fix, its so ALL other functions can see this function
+void SendMsg(char message[1024]);  // Function prototype goes here
+
 //set language
 char* languageSet(char* lang) 
 {
@@ -198,7 +201,7 @@ char* splitMsg_Default(char incomingMsg[1024], char datetime[20]){
 }
 
 //send msg to mqtt broker
-void SendMsg(char PAYLOAD[1024]){
+void SendMsg(char message[1024]){
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
@@ -219,8 +222,8 @@ void SendMsg(char PAYLOAD[1024]){
     }
 
     // Create the message
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
+    pubmsg.payload = message;
+    pubmsg.payloadlen = strlen(message);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
 

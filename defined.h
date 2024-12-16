@@ -5,6 +5,6 @@
 #define QOS         1                                           // Quality of Service level
 #define TIMEOUT     10000L                                      // Timeout in milliseconds
 
-#define	sevDefault  "SEV4\0"                                     //default severity
-#define	errorCodeDefault    "ERR0000\0"                            //default error code
-#define	errorMsgDefault "errorcode is invalid/not found"    //default error message
+#define sevDefault          "SEV4"                              // default severity
+#define errorCodeDefault    "ERR0000"                          // default error code
+#define errorMsgDefault     "errorcode is invalid/not found"    // default error message
