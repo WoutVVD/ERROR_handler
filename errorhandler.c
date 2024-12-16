@@ -199,16 +199,10 @@ char* splitMsg_Default(char incomingMsg[1024], char datetime[20]){
 
 //send msg to mqtt broker
 void SendMsg(char PAYLOAD[1024]){
-    //AI START (SEGMENTATION FAULT)
-    // Create a local copy of the payload
-    char* payload_copy = strdup(PAYLOAD);
-    pubmsg.payload = payload_copy;
-    // ... rest of the code ...
-    free(payload_copy); // Free before disconnecting
-    //AI END (SEGMENTATION FAULT)
-
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    MQTTClient_deliveryToken token;
     int rc;
 
     // Initialize the MQTT client
@@ -225,15 +219,13 @@ void SendMsg(char PAYLOAD[1024]){
     }
 
     // Create the message
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
     pubmsg.payload = PAYLOAD;
     pubmsg.payloadlen = strlen(PAYLOAD);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
 
     // Publish the message
-    MQTTClient_deliveryToken token;
-    MQTTClient_publishMessage(client, NULL, &pubmsg, &token);
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("Message with delivery token %d delivered\n", token);
 
@@ -272,7 +264,7 @@ int main(int argc, char* argv[]) {
 
     MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
 
-    MQTTClient_setCallbacks(CLIENTID, NULL, NULL, receiveMsg, NULL);
+    MQTTClient_setCallbacks(client, NULL, NULL, receiveMsg, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     
